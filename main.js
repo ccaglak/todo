@@ -17,10 +17,11 @@ app.innerHTML = `
    </div>
    <div class="p-4  border border-gray-700 rounded-xl">
       <div class="flex justify-around">
-         <button type="button" id="tds_delete" class="p-1 bg-pink-800 leading-none text-sm font-medium border rounded-lg text-gray-300">
+         <button type="button" id="tds_delete" class="p-2 bg-blue-600 leading-none text-sm font-medium border rounded-lg text-gray-300">
             Clear All Todos
          </button>
-         <button type="button" id="tds_clear" class="p-1 bg-pink-400 leading-none text-sm font-medium border rounded-lg text-gray-300">
+         <p id='td_count' class="p-2 px-3 bg-blue-900 leading-none text-sm font-medium border rounded-lg text-gray-300">Todo: 0</p>
+         <button type="button" id="tds_clear" class="p-2 bg-blue-600 leading-none text-sm font-medium border rounded-lg text-gray-300">
             X Completed Todos
          </button>
       </div>
@@ -32,7 +33,7 @@ app.innerHTML = `
 
 class Store {
    constructor() {
-      this.store = [];
+      this.store = JSON.parse(localStorage.getItem('todos')) ?? [];
    }
 
    addItem = (label) => {
@@ -76,7 +77,7 @@ class Store {
    _pinned = () => {
       const todos = this.store.filter((todo) => !todo.pinned);
       const pinned = this.store.filter((todo) => todo.pinned);
-      this.store = [ ...pinned, ...todos ];
+      this.store = Array.from([ ...pinned, ...todos ]);  // [...pinned, ...todos]
    };
 
    pinItem = (id) => {
@@ -164,14 +165,13 @@ class TodoItem {
          }>
          <h5 class="text-white text-sm">${this._getTime()}</h5>
          </div>
-
-         <p class="mt-1 ml-9 text-base font-medium text-gray-300">
+         <p class="${this.completed ? 'line-through' : ''} mt-1 ml-9 text-base font-medium text-gray-300">
             ${this.label}
          </p>
          <div class="flex items-center justify-end mt-6">
             <ul class="flex space-x-2">
                <button type="button" id="td_pin"
-                  class="${this.pinned ? 'bg-red-900 ' : ''}inline-block rounded-xl text-white text-xs font-medium px-3 py-1.5 bg-gray-500 hover:bg-pink-600">
+                  class="${this.pinned ? 'bg-red-900 ' : ''}inline-block rounded-xl text-white text-base font-medium px-3 py-1.5 bg-gray-500 hover:bg-pink-600">
                   Pin
                </button>
                <button type="button" id="td_del"
@@ -225,6 +225,8 @@ class Controller {
    }
    init = () => {
       new UserInput();
+      this.renderTodos();
+
    };
 
    addTodo = (label) => {
@@ -253,8 +255,15 @@ class Controller {
       this.store.clearItems();
       this.renderTodos();
    };
+
+   storage = () => {
+      localStorage.setItem('todos', JSON.stringify(this.store.store));
+   };
+
    renderTodos = () => {
+      this.storage();
       app.querySelector('#td_ul').innerHTML = '';
+      app.querySelector('#td_count').innerText = `Todo: ${this.store.store.filter(todo => !todo.completed).length || 0}`;
       this.store.store.forEach((todo) => {
          new TodoItem(todo);
       });
