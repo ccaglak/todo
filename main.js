@@ -36,6 +36,18 @@ class Store {
       this.store = JSON.parse(localStorage.getItem('todos')) ?? [];
    }
 
+   // todos = async function getTodos() {
+   //    let response = await fetch('/api/todos.json', {
+   //       method: 'PUT',
+   //       headers: {
+   //          'Content-type': 'application/json; charset=UTF-8'
+   //       },
+   //       body: JSON.stringify(...this.store)
+   //    });
+   //    let t = await response.json();
+   //    console.log(t);
+   // };
+
    addItem = (label) => {
       this.store = [
          ...this.store,
@@ -71,7 +83,6 @@ class Store {
          }
          return todo;
       });
-
    };
 
    _pinned = () => {
@@ -262,9 +273,13 @@ class Controller {
 
    renderTodos = () => {
       this.storage();
+      const store = this.store.store;
+
       app.querySelector('#td_ul').innerHTML = '';
-      app.querySelector('#td_count').innerText = `Todo: ${this.store.store.filter(todo => !todo.completed).length || 0}`;
-      this.store.store.forEach((todo) => {
+      const clr = app.querySelector('#tds_clear');
+      store.some((todo) => todo.completed) ? clr.classList.remove('hidden') : clr.classList.add('hidden');
+      app.querySelector('#td_count').innerText = `Todo: ${store.filter(todo => !todo.completed).length || 0}`;
+      store.forEach((todo) => {
          new TodoItem(todo);
       });
    };
